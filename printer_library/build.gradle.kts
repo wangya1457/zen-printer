@@ -55,6 +55,7 @@ dependencies {
 publishing {
     publications {
         register<MavenPublication>("release") {
+            from(components["release"])
             groupId = "com.zen.zenith"
             artifactId = "printer-library"
             version = "1.0.0"
