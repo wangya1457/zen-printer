@@ -56,6 +56,8 @@ object ZinPrinter {
             val printData = Gson().fromJson(data, PrintData::class.java)
             when (printData.printerType) {
                 PRINTER_TYPE_EPSON -> EpsonPrinter.print(data)
+                PRINTER_TYPE_SPRT -> SprtPrinter.print(printData)
+                PRINTER_TYPE_GAINSCHA -> GainschaPrinter.print(printData)
                 else -> EpsonPrinter.print(data)
             }
         } catch (e: Exception) {

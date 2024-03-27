@@ -2,7 +2,7 @@ package com.zen.printer_library
 
 data class PrintData(
     var type: String?, // label receipt
-    var printerType: String?, // 打印机型号
+    var printerType: String?, // epson sprt gainscha
     var dataType: String?, // zinData(自定义打印数据结构) commandData(ESC-POS或TSC 打印指令)
     var language: String?, // ZH_CN EN 打印语言
     var charSet: String?, // GBK 打印字符集

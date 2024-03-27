@@ -14,6 +14,7 @@ import com.printer.sdk.PrinterInstance
 import com.zen.printer_library.CONNECTION_TYPE_BLUETOOTH
 import com.zen.printer_library.CONNECTION_TYPE_WIFI
 import com.zen.printer_library.Label
+import com.zen.printer_library.PrintData
 import com.zen.printer_library.R
 import com.zen.printer_library.ZinPrinter.TEST_BLUETOOTH_ADDRESS
 import kotlinx.coroutines.CoroutineScope
@@ -125,6 +126,16 @@ object SprtPrinter {
             }
         }
 
+    }
+
+    fun print(printData: PrintData) {
+        when (printData.type) {
+            "label" -> {
+                printData.label?.let {
+                    printLabel(it)
+                }
+            }
+        }
     }
 
     fun printLabel(label: Label) {

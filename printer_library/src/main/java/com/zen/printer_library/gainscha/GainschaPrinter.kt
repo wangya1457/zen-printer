@@ -16,7 +16,9 @@ import com.zen.printer_library.CONNECTION_TYPE_BLUETOOTH
 import com.zen.printer_library.CONNECTION_TYPE_ETHERNET
 import com.zen.printer_library.CONNECTION_TYPE_WIFI
 import com.zen.printer_library.Label
+import com.zen.printer_library.PrintData
 import com.zen.printer_library.R
+import com.zen.printer_library.sprt.SprtPrinter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -187,6 +189,16 @@ object GainschaPrinter {
             barCodeType = null
         )
         printLabel(testLabel)
+    }
+
+    fun print(printData: PrintData) {
+        when (printData.type) {
+            "label" -> {
+                printData.label?.let {
+                    SprtPrinter.printLabel(it)
+                }
+            }
+        }
     }
 
     fun printLabel(label: Label) {
