@@ -35,7 +35,7 @@ object EpsonPrinter {
     }
 
     fun setPrinterIP(ip: String) {
-        TCP_IP = ip
+        TCP_IP = "TCP:".plus(ip)
     }
 
     fun printTest1() {

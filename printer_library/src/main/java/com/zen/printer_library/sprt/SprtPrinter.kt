@@ -5,13 +5,17 @@ import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.widget.Toast
 import androidx.core.graphics.scale
 import com.printer.sdk.PrinterConstants
 import com.printer.sdk.PrinterInstance
+import com.zen.printer_library.CONNECTION_TYPE_BLUETOOTH
+import com.zen.printer_library.CONNECTION_TYPE_WIFI
 import com.zen.printer_library.Label
 import com.zen.printer_library.R
+import com.zen.printer_library.ZinPrinter.TEST_BLUETOOTH_ADDRESS
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,43 +24,73 @@ import kotlinx.coroutines.withContext
 @SuppressLint("StaticFieldLeak")
 object SprtPrinter {
     private val printScope = CoroutineScope(Dispatchers.IO)
-
     lateinit var mContext: Context
     lateinit var mPrinter: PrinterInstance
-    const val TEST_BLUETOOTH_ADDRESS = "00:12:5B:00:97:F5"
     private var bluetooth_address = TEST_BLUETOOTH_ADDRESS
     const val marginDot = 16
+    var printerConnected = false
 
-    fun initSprintPrinter(context: Context) {
+    val connectionHandler: Handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                PrinterConstants.Connect.SUCCESS -> {
+                    printerConnected = true
+                    showToast("打印机连接成功！")
+                }
+
+                PrinterConstants.Connect.FAILED -> {
+                    printerConnected = false
+                    showToast("打印机连接失败！")
+                }
+
+                PrinterConstants.Connect.CLOSED -> {
+                    printerConnected = false
+                    showToast("打印机连接关闭！")
+                }
+
+                PrinterConstants.Connect.NODEVICE -> {
+                    printerConnected = false
+                    showToast("无设备！")
+                }
+            }
+        }
+    }
+
+    fun initSprintPrinter(
+        context: Context,
+        connectionType: String = CONNECTION_TYPE_BLUETOOTH,
+        connectionData: String = TEST_BLUETOOTH_ADDRESS
+    ) {
         mContext = context
         try {
-            val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(bluetooth_address)
-            mPrinter =
-                PrinterInstance.getPrinterInstance(device, object : Handler(context.mainLooper) {
-                    override fun handleMessage(msg: Message) {
-                        when (msg.what) {
-                            PrinterConstants.Connect.SUCCESS -> {
-                                showToast("蓝牙打印机连接成功！")
-                            }
-
-                            PrinterConstants.Connect.FAILED -> {
-                                showToast("蓝牙打印机连接失败！")
-                            }
-
-                            PrinterConstants.Connect.CLOSED -> {
-                                showToast("蓝牙打印机连接关闭！")
-                            }
-
-                            PrinterConstants.Connect.NODEVICE -> {
-                                showToast("无设备！")
-                            }
-                        }
-                    }
-                })
-            mPrinter.openConnection()
+            bluetooth_address = connectionData
+            getPrinter(connectionType, connectionData)
+            if (!printerConnected) {
+                printScope.launch {
+                    mPrinter.openConnection()
+                }
+            }
         } catch (e: Exception) {
             showToast("printTestErr:$e")
         }
+    }
+
+    private fun getPrinter(connectionType: String, connectionData: String) {
+        when (connectionType) {
+            CONNECTION_TYPE_BLUETOOTH -> {
+                val device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(connectionData)
+                mPrinter = PrinterInstance.getPrinterInstance(device, connectionHandler)
+            }
+            CONNECTION_TYPE_WIFI -> {
+                val devicesAddress = connectionData
+                mPrinter = PrinterInstance.getPrinterInstance(
+                    devicesAddress,
+                    9100,
+                    connectionHandler
+                )
+            }
+        }
+
     }
 
     fun printTest() {
@@ -64,8 +98,8 @@ object SprtPrinter {
         val testLabel = Label(
             title = "超级珍珠珠...",
             text1 = "制作时间: 23/09/24 17:32",
-            text2 = "制作时间: 23/09/24 17:32",
-            text3 = "制作时间: 23/09/24 17:32",
+            text2 = "过期时间: 23/09/24 20:32",
+            text3 = "操作人:   王豹豹",
             barCode = "88d9ad376",
             barCodeType = null
         )
